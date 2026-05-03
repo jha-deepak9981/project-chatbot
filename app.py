@@ -82,7 +82,7 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-info">
         <b>About</b><br>
-        Model: gemini-2.0-flash<br>
+        Model: gemini-pro-latest<br>
         Context: Full history<br>
         <a href="https://aistudio.google.com" style="color:#00B4D8">Get API Key →</a>
     </div>
@@ -133,7 +133,7 @@ if user_input:
     # Build Gemini message history
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
+        model_name="gemini-pro-latest",
         system_instruction=PERSONAS[persona]
     )
 
