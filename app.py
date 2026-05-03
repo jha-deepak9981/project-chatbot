@@ -12,26 +12,86 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# CUSTOM CSS
+# CUSTOM CSS — clean light theme
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    .stApp { background-color: #0a1628; }
+    /* Page background */
+    .stApp { background-color: #F0F4F8; }
+
+    /* Main content area */
+    .block-container { padding-top: 2rem; }
+
+    /* Header banner */
     .main-header {
-        background: linear-gradient(135deg, #065A82, #1C7293);
+        background: linear-gradient(135deg, #1565C0, #1976D2);
         padding: 24px 32px; border-radius: 16px;
         margin-bottom: 24px; text-align: center;
+        box-shadow: 0 4px 12px rgba(21,101,192,0.25);
     }
-    .main-header h1 { color: #00B4D8; margin: 0; font-size: 2rem; }
-    .main-header p  { color: #90E0EF; margin: 4px 0 0; }
-    .stChatMessage { border-radius: 12px; margin-bottom: 8px; }
-    .stTextInput > div > div > input {
-        background: #0D2137; color: white; border: 1px solid #1C7293; border-radius: 10px;
+    .main-header h1 { color: #FFFFFF; margin: 0; font-size: 2rem; }
+    .main-header p  { color: #BBDEFB; margin: 6px 0 0; font-size: 1rem; }
+
+    /* Chat messages — user */
+    [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatar"] svg[aria-label="user"]),
+    [data-testid="stChatMessage"][data-role="user"] {
+        background: #1565C0 !important;
+        border-radius: 14px !important;
+        padding: 12px 16px !important;
     }
+    [data-testid="stChatMessage"][data-role="user"] p { color: #FFFFFF !important; }
+
+    /* Chat messages — assistant */
+    [data-testid="stChatMessage"][data-role="assistant"] {
+        background: #FFFFFF !important;
+        border-radius: 14px !important;
+        border: 1px solid #BBDEFB !important;
+        padding: 12px 16px !important;
+    }
+    [data-testid="stChatMessage"][data-role="assistant"] p { color: #1A1A2E !important; }
+
+    /* Generic chat message spacing */
+    [data-testid="stChatMessage"] {
+        margin-bottom: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    /* Chat input box */
+    [data-testid="stChatInput"] textarea {
+        background: #FFFFFF;
+        color: #1A1A2E;
+        border: 1.5px solid #90CAF9;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #1A237E;
+    }
+    [data-testid="stSidebar"] * { color: #E8EAF6 !important; }
+    [data-testid="stSidebar"] .stButton > button {
+        background: #283593;
+        color: #E8EAF6 !important;
+        border: 1px solid #3F51B5;
+        border-radius: 8px;
+        width: 100%;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: #3F51B5;
+    }
+    [data-testid="stSidebar"] .stSelectbox label { color: #90CAF9 !important; }
+
+    /* Sidebar info box */
     .sidebar-info {
-        background: #0D2137; padding: 16px; border-radius: 12px;
-        border: 1px solid #1C7293; color: #90E0EF;
+        background: #283593; padding: 14px; border-radius: 10px;
+        border: 1px solid #3F51B5; color: #BBDEFB !important;
+        font-size: 0.9rem; line-height: 1.6;
     }
+    .sidebar-info a { color: #82B1FF !important; }
+
+    /* Error messages */
+    [data-testid="stAlert"] { border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -46,10 +106,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# SIDEBAR — API KEY + SETTINGS
+# API KEY — from Streamlit secrets or env var
 # ─────────────────────────────────────────────
 api_key = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
+# ─────────────────────────────────────────────
+# SIDEBAR — SETTINGS
+# ─────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
     st.markdown("---")
@@ -82,9 +145,9 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-info">
         <b>About</b><br>
-        Model: gemini-pro-latest<br>
+        Model: gemini-1.5-pro-latest<br>
         Context: Full history<br>
-        <a href="https://aistudio.google.com" style="color:#00B4D8">Get API Key →</a>
+        <a href="https://aistudio.google.com">Get API Key →</a>
     </div>
     """, unsafe_allow_html=True)
 
@@ -122,29 +185,26 @@ user_input = st.chat_input("Type your message here...") or pending
 
 if user_input:
     if not api_key:
-        st.error("Please enter your Gemini API key in the sidebar to start chatting.")
+        st.error("GEMINI_API_KEY not found. Add it to Streamlit Secrets or set it as an environment variable.")
         st.stop()
 
-    # Add user message
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Build Gemini message history
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name="gemini-pro-latest",
+        model_name="gemini-1.5-pro-latest",
         system_instruction=PERSONAS[persona]
     )
 
     history = []
-    for msg in st.session_state.messages[:-1]:  # exclude last (current user msg)
+    for msg in st.session_state.messages[:-1]:
         role = "user" if msg["role"] == "user" else "model"
         history.append({"role": role, "parts": [msg["content"]]})
 
     chat = model.start_chat(history=history)
 
-    # Stream response
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             response_placeholder = st.empty()
