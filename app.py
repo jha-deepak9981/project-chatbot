@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import google.generativeai as genai
 
@@ -47,17 +48,10 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # SIDEBAR — API KEY + SETTINGS
 # ─────────────────────────────────────────────
+api_key = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
-    
-    # API Key input
-    api_key = st.text_input(
-        "Gemini API Key",
-        type="password",
-        placeholder="AIzaSy...",
-        help="Get your free key at https://aistudio.google.com"
-    )
-    
     st.markdown("---")
     st.markdown("### 🎛️ Chatbot Persona")
     persona = st.selectbox("Choose mode:", [
@@ -88,7 +82,7 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-info">
         <b>About</b><br>
-        Model: gemini-1.5-flash<br>
+        Model: gemini-2.0-flash<br>
         Context: Full history<br>
         <a href="https://aistudio.google.com" style="color:#00B4D8">Get API Key →</a>
     </div>
@@ -139,7 +133,7 @@ if user_input:
     # Build Gemini message history
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         system_instruction=PERSONAS[persona]
     )
 
