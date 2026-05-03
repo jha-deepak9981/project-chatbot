@@ -145,7 +145,7 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-info">
         <b>About</b><br>
-        Model: gemini-1.5-pro-latest<br>
+        Model: gemini-pro-latest<br>
         Context: Full history<br>
         <a href="https://aistudio.google.com">Get API Key →</a>
     </div>
@@ -194,7 +194,7 @@ if user_input:
 
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro-latest",
+        model_name="gemini-pro-latest",
         system_instruction=PERSONAS[persona]
     )
 
